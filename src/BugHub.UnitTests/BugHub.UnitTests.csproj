@@ -4,4 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BugHub.WebApi\BugHub.WebApi.csproj" />
+    <ProjectReference Include="..\BugHub\BugHub.csproj" />
+  </ItemGroup>
+
 </Project>
