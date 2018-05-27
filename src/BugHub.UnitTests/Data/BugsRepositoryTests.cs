@@ -18,7 +18,7 @@ namespace BugHub.UnitTests.Data
       // Arrange
       var connection = DbConnectionFactory.CreateTransient();
       The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(new BugDbContext(connection));
-      var expectedBug = TestUtility.GenerateBug();
+      var expectedBug = TestUtility.GenerateEntityBugLite();
 
       // Act
       var actualBug = await Target.Create(expectedBug);
@@ -39,7 +39,7 @@ namespace BugHub.UnitTests.Data
       var connection = DbConnectionFactory.CreateTransient();
       var dbContext = new BugDbContext(connection);
       The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
-      var expectedBugs = Enumerable.Range(0, 10).Select(x => TestUtility.GenerateBug()).ToList();
+      var expectedBugs = Enumerable.Range(0, 10).Select(x => TestUtility.GenerateEntityBugLite()).ToList();
       foreach (var bugEntity in expectedBugs)
       {
         dbContext.Bugs.Add(bugEntity);
@@ -73,7 +73,7 @@ namespace BugHub.UnitTests.Data
       var dbContext = new BugDbContext(connection);
       The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
       
-      var expectedBug = TestUtility.GenerateBug();
+      var expectedBug = TestUtility.GenerateEntityBugLite();
       dbContext.Bugs.Add(expectedBug);
       await dbContext.SaveChangesAsync();
       var modificationDate = expectedBug.LastModificationDate;
@@ -99,7 +99,7 @@ namespace BugHub.UnitTests.Data
       var connection = DbConnectionFactory.CreateTransient();
       The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(new BugDbContext(connection));
       
-      var expectedBug = TestUtility.GenerateBug();
+      var expectedBug = TestUtility.GenerateEntityBugLite();
       expectedBug.Id = TestUtility.FixtureInstance.Create<int>();
       
       // Act
@@ -117,7 +117,7 @@ namespace BugHub.UnitTests.Data
       var dbContext = new BugDbContext(connection);
       The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
       
-      var expectedBug = TestUtility.GenerateBug();
+      var expectedBug = TestUtility.GenerateEntityBugLite();
       dbContext.Bugs.Add(expectedBug);
       await dbContext.SaveChangesAsync();
 

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Web;
 using System.Web.Configuration;
+using AutoMapper;
 using BugHub.Data.Context;
+using BugHub.Data.Entities;
 using BugHub.Data.Repositories;
+using BugHub.WebApi.Models.V1;
 using Ninject;
 using Ninject.Web.Common;
 
@@ -30,6 +33,16 @@ namespace BugHub.WebApi
 
     private static void RegisterServices(IKernel kernel)
     {
+      kernel.Bind<IMapper>().ToMethod(k =>
+      {
+        Mapper.Initialize(cfg => {
+          cfg.CreateMap<Bug, BugEntity>(MemberList.Source);
+          cfg.CreateMap<BugEntity, Bug>(MemberList.Source);
+        });
+
+        return Mapper.Instance;
+      }).InSingletonScope();
+
       kernel.Bind<IBugRepository>().To<BugRepository>().InSingletonScope();
       kernel.Bind<IDbContextFactory>().ToMethod(k =>
       {

@@ -30,7 +30,7 @@ namespace BugHub.Data.Repositories
       }
     }
 
-    public async Task<IList<BugEntity>> Get()
+    public async Task<List<BugEntity>> Get()
     {
       using (var ctx = _dbContextFactory.CreateBugDbContext())
       {
