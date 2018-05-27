@@ -57,5 +57,23 @@ namespace BugHub.Data.Repositories
         return existingBug;
       }
     }
+
+    public async Task<bool> Delete(long id)
+    {
+      using (var ctx = _dbContextFactory.CreateBugDbContext())
+      {
+        var existingBug = await ctx.Bugs.SingleOrDefaultAsync(x => x.Id == id);
+        if (existingBug == null)
+        {
+          return false;
+        }
+
+        ctx.Bugs.Remove(existingBug);
+        
+        await ctx.SaveChangesAsync();
+
+        return true;
+      }
+    }
   }
 }

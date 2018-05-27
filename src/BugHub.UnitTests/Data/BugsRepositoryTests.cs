@@ -108,5 +108,38 @@ namespace BugHub.UnitTests.Data
       // Assert
       actualBug.Should().BeNull();
     }
+
+    [Fact]
+    public async Task GivenABugRepository_WhenAnExistingBugIsDeleted_ThenReturnsTrue()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      var dbContext = new BugDbContext(connection);
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
+      
+      var expectedBug = TestUtility.GenerateBug();
+      dbContext.Bugs.Add(expectedBug);
+      await dbContext.SaveChangesAsync();
+
+      // Act
+      var actualBug = await Target.Delete(expectedBug.Id);
+
+      // Assert
+      actualBug.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GivenABugRepository_WhenAnNonExistingBugIsDeleted_ThenReturnsFalse()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(new BugDbContext(connection));
+      
+      // Act
+      var actualBug = await Target.Delete(TestUtility.FixtureInstance.Create<long>());
+
+      // Assert
+      actualBug.Should().BeFalse();
+    }
   }
 }
