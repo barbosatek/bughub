@@ -31,7 +31,7 @@ namespace BugHub.WebApi
       }
     }
 
-    private static void RegisterServices(IKernel kernel)
+    public static void RegisterServices(IKernel kernel)
     {
       kernel.Bind<IMapper>().ToMethod(k =>
       {
