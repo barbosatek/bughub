@@ -6,7 +6,7 @@ namespace BugHub.Data.Context
 {
   public partial class BugDbContext : DbContext
   {
-    public BugDbContext() : base()
+    public BugDbContext(SqlConnectionOptions sqlConnectionOptions) : base(StringConectionFactory.Create(sqlConnectionOptions))
     {
     }
 
