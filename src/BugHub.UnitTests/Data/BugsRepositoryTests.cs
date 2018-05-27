@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using BugHub.Data.Context;
-using BugHub.Data.Entities;
 using BugHub.Data.Repositories;
 using Effort;
 using FluentAssertions;
@@ -64,6 +63,50 @@ namespace BugHub.UnitTests.Data
         actualBug.Title.Should().Be(expectedBug.Title);
         actualBug.Description.Should().Be(expectedBug.Description);
       }
+    }
+
+    [Fact]
+    public async Task GivenABugRepository_WhenAnExistingBugIsUpdated_ThenReturnsUpdatedBug()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      var dbContext = new BugDbContext(connection);
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
+      
+      var expectedBug = TestUtility.GenerateBug();
+      dbContext.Bugs.Add(expectedBug);
+      await dbContext.SaveChangesAsync();
+      var modificationDate = expectedBug.LastModificationDate;
+
+      expectedBug.Title = TestUtility.FixtureInstance.Create<string>();
+      expectedBug.Description = TestUtility.FixtureInstance.Create<string>();
+
+      // Act
+      var actualBug = await Target.Update(expectedBug);
+
+      // Assert
+      actualBug.Should().NotBeNull();
+      actualBug.Title.Should().Be(expectedBug.Title);
+      actualBug.Description.Should().Be(expectedBug.Description);
+      actualBug.CreationDate.Should().Be(expectedBug.CreationDate);
+      actualBug.LastModificationDate.Should().BeAfter(modificationDate);
+    }
+
+    [Fact]
+    public async Task GivenABugRepository_WhenAnNonExistingBugIsUpdated_ThenReturnsNull()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(new BugDbContext(connection));
+      
+      var expectedBug = TestUtility.GenerateBug();
+      expectedBug.Id = TestUtility.FixtureInstance.Create<int>();
+      
+      // Act
+      var actualBug = await Target.Update(expectedBug);
+
+      // Assert
+      actualBug.Should().BeNull();
     }
   }
 }

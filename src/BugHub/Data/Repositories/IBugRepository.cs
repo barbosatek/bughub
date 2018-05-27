@@ -8,5 +8,6 @@ namespace BugHub.Data.Repositories
   {
     Task<BugEntity> Create(BugEntity bugEntity);
     Task<IList<BugEntity>> Get();
+    Task<BugEntity> Update(BugEntity bugEntity);
   }
 }

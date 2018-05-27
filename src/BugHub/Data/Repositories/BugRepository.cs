@@ -37,5 +37,25 @@ namespace BugHub.Data.Repositories
         return await ctx.Bugs.ToListAsync();
       }
     }
+
+    public async Task<BugEntity> Update(BugEntity bugEntity)
+    {
+      using (var ctx = _dbContextFactory.CreateBugDbContext())
+      {
+        var existingBug = await ctx.Bugs.SingleOrDefaultAsync(x => x.Id == bugEntity.Id);
+        if (existingBug == null)
+        {
+          return null;
+        }
+        
+        existingBug.LastModificationDate = DateTime.UtcNow;
+        existingBug.Title = bugEntity.Title;
+        existingBug.Description = bugEntity.Description;
+        
+        await ctx.SaveChangesAsync();
+
+        return existingBug;
+      }
+    }
   }
 }
