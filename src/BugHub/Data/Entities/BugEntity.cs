@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BugHub.Data.Entities
 {
+  [Table("Bugs", Schema = "dbo")]
   public class BugEntity
   {
     public long Id { get; set; }

@@ -15,6 +15,12 @@ namespace BugHub.Data.Context
       // For testing purposes.
     }
 
+    protected override void OnModelCreating(DbModelBuilder modelBuilder)
+    {
+      Database.SetInitializer<BugDbContext>(null);
+      base.OnModelCreating(modelBuilder);
+    }
+
     public IDbSet<BugEntity> Bugs { get; set; }
   }
 }
