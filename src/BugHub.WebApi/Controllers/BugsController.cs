@@ -50,7 +50,7 @@ namespace BugHub.WebApi.Controllers
     }
 
     [HttpDelete]
-    [Route("")]
+    [Route("{id}")]
     public async Task<IHttpActionResult> Delete([FromUri] long id)
     {
       await _bugRepository.Delete(id);
