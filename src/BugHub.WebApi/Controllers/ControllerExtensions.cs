@@ -13,5 +13,11 @@ namespace BugHub.WebApi.Controllers
       var response = controller.Request.CreateResponse(HttpStatusCode.NoContent);
       return new ResponseMessageResult(response);
     }
+
+    public static IHttpActionResult Forbid(this ApiController controller)
+    {
+      var response = controller.Request.CreateResponse(HttpStatusCode.Forbidden);
+      return new ResponseMessageResult(response);
+    }
   }
 }

@@ -14,6 +14,8 @@ namespace BugHub.UnitTests
       return new Uri("http://" + FixtureInstance.Create<string>() + ".com");
     }
 
+    public static string RandomString => FixtureInstance.Create<string>();
+
     public static BugEntity GenerateEntityBugLite()
     {
       return new BugEntity

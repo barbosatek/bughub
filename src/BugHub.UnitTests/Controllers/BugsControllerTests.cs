@@ -13,6 +13,8 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 using AutoFixture;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace BugHub.UnitTests.Controllers
 {
@@ -53,8 +55,7 @@ namespace BugHub.UnitTests.Controllers
       var bug = TestUtility.GenerateBug();
       var bugEntity = TestUtility.GenerateEntityBug();
       The<IBugRepository>().Setup(x => x.Create(bugEntity)).Returns(Task.FromResult(bugEntity));
-      The<IMapper>().Setup(x => x.Map<Bug>(It.Is<BugEntity>(p => p.Id == bugEntity.Id))).Returns(bug);
-      The<IMapper>().Setup(x => x.Map<BugEntity>(It.Is<Bug>(p => p.Id == bug.Id))).Returns(bugEntity);
+      The<IMapper>().SetupMap(bug, bugEntity);
       
       Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
 
@@ -75,7 +76,7 @@ namespace BugHub.UnitTests.Controllers
       var bugEntity = TestUtility.GenerateEntityBug();
       bug.Id = bugEntity.Id;
       The<IBugRepository>().Setup(x => x.Get(bugEntity.Id)).Returns(Task.FromResult(bugEntity));
-      The<IMapper>().Setup(x => x.Map<Bug>(It.Is<BugEntity>(p => p.Id == bugEntity.Id))).Returns(bug);
+      The<IMapper>().SetupMap(bug, bugEntity);
       
       Target.SetupRequest(HttpMethod.Get, TestUtility.CreateUri());
 
@@ -93,7 +94,7 @@ namespace BugHub.UnitTests.Controllers
     {
       // Arrange
       var id = TestUtility.FixtureInstance.Create<long>();
-      BugEntity bugEntity = null;;
+      BugEntity bugEntity = null;
       The<IBugRepository>().Setup(x => x.Get(id)).Returns(Task.FromResult(bugEntity));
       
       Target.SetupRequest(HttpMethod.Get, TestUtility.CreateUri());
@@ -120,6 +121,88 @@ namespace BugHub.UnitTests.Controllers
       // Assert
       result.Should().NotBeNull();
       result.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTheServer_WhenPatchBugRequestIsProcess_ReturnsNoContent()
+    {
+      // Arrange
+      var bug = TestUtility.GenerateBug();
+      var bugEntity = TestUtility.GenerateEntityBug();
+      bug.Id = bugEntity.Id;
+
+      The<IBugRepository>().Setup(x => x.Get(bug.Id)).Returns(Task.FromResult(bugEntity));
+      The<IBugRepository>().Setup(x => x.Update(bugEntity)).Returns(Task.FromResult(bugEntity));
+      The<IMapper>().SetupMap(bug, bugEntity);
+      
+      Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
+      var patchDocument = new JsonPatchDocument<Bug>();
+
+      // Act
+      var result = await Target.Patch(patchDocument, bug.Id) as ResponseMessageResult;
+
+      // Assert
+      result.Should().NotBeNull();
+      result.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTheServer_WhenPatchBugRequestIsProcessAndBugDoesNotExist_ReturnsNoFound()
+    {
+      // Arrange
+      BugEntity bugEntity = null;
+      var id = TestUtility.FixtureInstance.Create<long>();
+      The<IBugRepository>().Setup(x => x.Get(id)).Returns(Task.FromResult(bugEntity));
+      
+      Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
+      
+      // Act
+      var result = await Target.Patch(new JsonPatchDocument<Bug>(), id) as NotFoundResult;
+
+      // Assert
+      result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GivenTheServer_WhenPatchBugRequestWithErrorsIsProcess_ReturnsBadRequest()
+    {
+      // Arrange
+      var bug = TestUtility.GenerateBug();
+      var bugEntity = TestUtility.GenerateEntityBug();
+      bug.Id = bugEntity.Id;
+
+      The<IBugRepository>().Setup(x => x.Get(bug.Id)).Returns(Task.FromResult(bugEntity));
+      The<IMapper>().SetupMap(bug, bugEntity);
+      
+      Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
+      var patchDocument = new JsonPatchDocument<Bug>();
+      patchDocument.Operations.Add(new Operation<Bug>(TestUtility.RandomString, TestUtility.RandomString, TestUtility.RandomString));
+
+      // Act
+      var result = await Target.Patch(patchDocument, bug.Id) as BadRequestErrorMessageResult;
+
+      // Assert
+      result.Should().NotBeNull();
+      result.Message.Should().NotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("/id")]
+    [InlineData("/Id")]
+    public async Task GivenTheServer_WhenPatchBugRequestForForbiddenPathIsProcess_ReturnsForbidden(string path)
+    {
+      // Arrange
+      var id = TestUtility.FixtureInstance.Create<long>();
+      Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
+      var patchDocument = new JsonPatchDocument<Bug>();
+      patchDocument.Operations.Add(new Operation<Bug>("replace", path, TestUtility.FixtureInstance.Create<long>().ToString()));
+
+      // Act
+      var result = await Target.Patch(patchDocument, id) as ResponseMessageResult;
+
+      // Assert
+      result.Should().NotBeNull();
+      result.Response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
   }
 }
