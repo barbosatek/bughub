@@ -30,6 +30,21 @@ namespace BugHub.WebApi.Controllers
       return Ok(models);
     }
 
+    [HttpGet]
+    [Route("{id}")]
+    public async Task<IHttpActionResult> Get([FromUri] long id)
+    {
+      var entity = await _bugRepository.Get(id);
+      if (entity == null)
+      {
+        return NotFound();
+      }
+
+      var model = _mapper.Map<Bug>(entity);
+
+      return Ok(model);
+    }
+
     [HttpPut]
     [Route("")]
     public async Task<IHttpActionResult> Put([FromBody] Bug bug)

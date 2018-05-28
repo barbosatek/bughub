@@ -8,6 +8,7 @@ namespace BugHub.Data.Repositories
   {
     Task<BugEntity> Create(BugEntity bugEntity);
     Task<List<BugEntity>> Get();
+    Task<BugEntity> Get(long id);
     Task<BugEntity> Update(BugEntity bugEntity);
     Task<bool> Delete(long id);
   }

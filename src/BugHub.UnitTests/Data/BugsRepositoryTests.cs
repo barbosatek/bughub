@@ -66,6 +66,44 @@ namespace BugHub.UnitTests.Data
     }
 
     [Fact]
+    public async Task GivenABugRepository_WhenABugIsRetrieved_ThenReturnsBug()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      var dbContext = new BugDbContext(connection);
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
+      var bugEntity = TestUtility.GenerateEntityBugLite();
+      dbContext.Bugs.Add(bugEntity);
+
+      await dbContext.SaveChangesAsync();
+
+      // Act
+      var actualBug = await Target.Get(bugEntity.Id);
+
+      // Assert
+      actualBug.Should().NotBeNull();
+      actualBug.CreationDate.Should().Be(bugEntity.CreationDate);
+      actualBug.LastModificationDate.Should().Be(bugEntity.LastModificationDate);
+      actualBug.Title.Should().Be(bugEntity.Title);
+      actualBug.Description.Should().Be(bugEntity.Description);
+    }
+
+    [Fact]
+    public async Task GivenABugRepository_WhenANonExistingBugIsRetrieved_ThenReturnsNull()
+    {
+      // Arrange
+      var connection = DbConnectionFactory.CreateTransient();
+      var dbContext = new BugDbContext(connection);
+      The<IDbContextFactory>().Setup(x => x.CreateBugDbContext()).Returns(dbContext);
+      
+      // Act
+      var actualBug = await Target.Get(TestUtility.FixtureInstance.Create<long>());
+
+      // Assert
+      actualBug.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GivenABugRepository_WhenAnExistingBugIsUpdated_ThenReturnsUpdatedBug()
     {
       // Arrange

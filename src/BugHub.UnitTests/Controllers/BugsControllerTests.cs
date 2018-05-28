@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Web.Http.Results;
 using AutoMapper;
 using BugHub.Data.Entities;
@@ -13,6 +11,7 @@ using BugHub.WebApi.Models.V1;
 using FluentAssertions;
 using Moq;
 using Xunit;
+using AutoFixture;
 
 namespace BugHub.UnitTests.Controllers
 {
@@ -66,13 +65,43 @@ namespace BugHub.UnitTests.Controllers
       result.Content.Should().NotBeNull();
       result.Content.Should().Be(bug);
     }
-  }
 
-  public static class ApiControllerTestExtensions
-  {
-    public static void SetupRequest<T>(this T controller, HttpMethod httpMethod, Uri uri) where T : ApiController
+    [Fact]
+    public async Task GivenTheServer_WhenGetBugRequestIsProcessed_ReturnsBug()
     {
-      controller.Request = new HttpRequestMessage(httpMethod, uri);
+      // Arrange
+      var bug = TestUtility.GenerateBug();
+      var bugEntity = TestUtility.GenerateEntityBug();
+      bug.Id = bugEntity.Id;
+      The<IBugRepository>().Setup(x => x.Get(bugEntity.Id)).Returns(Task.FromResult(bugEntity));
+      The<IMapper>().Setup(x => x.Map<Bug>(It.Is<BugEntity>(p => p.Id == bugEntity.Id))).Returns(bug);
+      
+      Target.SetupRequest(HttpMethod.Get, TestUtility.CreateUri());
+
+      // Act
+      var result = await Target.Get(bug.Id) as OkNegotiatedContentResult<Bug>;
+
+      // Assert
+      result.Should().NotBeNull();
+      result.Content.Should().NotBeNull();
+      result.Content.Should().Be(bug);
+    }
+
+    [Fact]
+    public async Task GivenTheServer_WhenGetBugRequestIsProcessedAndBugDoesNotExist_ReturnsNotFound()
+    {
+      // Arrange
+      var id = TestUtility.FixtureInstance.Create<long>();
+      BugEntity bugEntity = null;;
+      The<IBugRepository>().Setup(x => x.Get(id)).Returns(Task.FromResult(bugEntity));
+      
+      Target.SetupRequest(HttpMethod.Get, TestUtility.CreateUri());
+
+      // Act
+      var result = await Target.Get(id) as NotFoundResult;
+
+      // Assert
+      result.Should().NotBeNull();
     }
   }
 }

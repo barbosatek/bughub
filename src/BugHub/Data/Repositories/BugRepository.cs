@@ -38,6 +38,14 @@ namespace BugHub.Data.Repositories
       }
     }
 
+    public async Task<BugEntity> Get(long id)
+    {
+      using (var ctx = _dbContextFactory.CreateBugDbContext())
+      {
+        return await ctx.Bugs.SingleOrDefaultAsync(x => x.Id == id);
+      }
+    }
+
     public async Task<BugEntity> Update(BugEntity bugEntity)
     {
       using (var ctx = _dbContextFactory.CreateBugDbContext())
