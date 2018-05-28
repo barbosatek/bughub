@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using AutoMapper;
@@ -43,6 +44,14 @@ namespace BugHub.WebApi.Controllers
       var model = _mapper.Map<Bug>(entity);
 
       return Ok(model);
+    }
+
+    [HttpDelete]
+    [Route("")]
+    public async Task<IHttpActionResult> Delete([FromUri] long id)
+    {
+      await _bugRepository.Delete(id);
+      return this.NoContent();
     }
 
     [HttpPut]

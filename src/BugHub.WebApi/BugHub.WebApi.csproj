@@ -199,6 +199,7 @@
     <Compile Include="App_Start\NinjectConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\BugsController.cs" />
+    <Compile Include="Controllers\ControllerExtensions.cs" />
     <Compile Include="Models\V1\Bug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />

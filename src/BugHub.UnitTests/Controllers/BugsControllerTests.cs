@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
@@ -55,7 +56,7 @@ namespace BugHub.UnitTests.Controllers
       The<IMapper>().Setup(x => x.Map<Bug>(It.Is<BugEntity>(p => p.Id == bugEntity.Id))).Returns(bug);
       The<IMapper>().Setup(x => x.Map<BugEntity>(It.Is<Bug>(p => p.Id == bug.Id))).Returns(bugEntity);
       
-      Target.SetupRequest(HttpMethod.Get, TestUtility.CreateUri());
+      Target.SetupRequest(HttpMethod.Put, TestUtility.CreateUri());
 
       // Act
       var result = await Target.Put(bug) as CreatedNegotiatedContentResult<Bug>;
@@ -102,6 +103,23 @@ namespace BugHub.UnitTests.Controllers
 
       // Assert
       result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GivenTheServer_WhenDeleteBugRequestIsProcessed_ReturnsNoContent()
+    {
+      // Arrange
+      var id = TestUtility.FixtureInstance.Create<long>();
+      The<IBugRepository>().Setup(x => x.Delete(id)).Returns(Task.FromResult(true));
+      
+      Target.SetupRequest(HttpMethod.Delete, TestUtility.CreateUri());
+
+      // Act
+      var result = await Target.Delete(id) as ResponseMessageResult;
+
+      // Assert
+      result.Should().NotBeNull();
+      result.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
   }
 }
